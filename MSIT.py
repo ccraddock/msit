@@ -25,6 +25,9 @@ import sys
 # Define                   #
 ############################
 
+# Turn fullscreen off for testing on monitor that is not 1024x768
+FULL_SCREEN=False
+
 # CC here are some parameters that determine the behavior of the task
 STIM_ISI_SECONDS = 1.75
 NSTIM_BLOCK = 24
@@ -52,24 +55,33 @@ LUMINA_TRIGGER = 4
 
 # Task instructions:
 task_instructions1 = """\
-Sets of three numbers (1, 2, 3, or 0) will appear"""
+Every few seconds, a set of three numbers (1, 2, 3, or 0)"""
 task_instructions2 = """\
-in the center of the screen every few seconds."""
+will appear in the center of the screen.""" 
 task_instructions3 = """\
-One of the numbers will always be different from"""
-task_instructions4 = """the other two."""
+One number will always be different from the other two."""
+task_instructions4 = """\
+Press the button corresponding to the identity,"""
 task_instructions5 = """\
-Please press the button corresponding to the"""
+not the position, of the differing number."""
 task_instructions6 = """\
-identity (not the position) of the differing number."""
-task_instructions7 = """The buttons corresponding to the values are: 1 = index finger, 2 = middle finger, 3 = ring"""
-task_instructions8 = """Answer as accurately and quickly as possible."""
+The values corresponding to the buttons are:"""
+task_instructions7 = """\
+index finger = 1, middle finger = 2, and ring finger = 3"""
+task_instructions8 = """\
+Answer as accurately and quickly as possible."""
+
+# The possible stimuli for the control condition
+all_ctrl_stim=['100','020','003']
+
+# The possible stimuli for the interference condition
+all_int_stim=['221','212','331','313','112','211','332','233','131','311',\
+    '232','322']
 
 ############################
 # Initialize Communication #
 # with the Lumina          #
 ############################
-
 
 ## initialize communication with the Lumina
 
@@ -96,30 +108,54 @@ if LUMINA == 1:
         log.write("Error: Lumina device is not a response device??")
         sys.exit(1)
 
+###############################
+# Get remaining configuration #
+# parameters.                 #
+###############################
+
 # Store info about the experiment session
 expName = 'MSIT'  # from the Builder filename that created this script
-expInfo = {'participant':'', 'session':'001'}
+
+# gui dialogue to get participant id, session number, and type of first
+# block (useful for counterbalancing)
+expInfo = {'Participant ID':'',\
+           'Session':'001', \
+           'Starting Block': ['Control', 'Interference']}
 dlg = gui.DlgFromDict(dictionary=expInfo, title=expName)
-if dlg.OK == False: core.quit()  # user pressed cancel
+
+# if user pressed cancel, quit
+if dlg.OK == False:
+    core.quit()
+
+# set a few more configuration parameters
 expInfo['date'] = data.getDateStr()  # add a simple timestamp
 expInfo['expName'] = expName
+
+####################################
+# Set up output files and logging. #
+####################################
 
 # Setup files for saving
 if not os.path.isdir('data'):
     os.makedirs('data')  # if this fails (e.g. permissions) we will get error
-filename = 'data' + os.path.sep + '%s_%s' %(expInfo['participant'], expInfo['date'])
+
+filename = 'data' + os.path.sep + '%s' %(expInfo['expName']) \
+    + os.path.sep + '%s_%s_%s_%s' %(expInfo['Participant ID'],\
+                                    expInfo['Session'],\
+                                    expInfo['Starting Block'],\
+                                    expInfo['date'])
+
 logFile = logging.LogFile(filename+'.log', level=logging.EXP)
 logging.console.setLevel(logging.WARNING)  # this outputs to the screen, not a file
 
 # An ExperimentHandler isn't essential but helps with data saving
 thisExp = data.ExperimentHandler(name=expName, version='',
     extraInfo=expInfo, runtimeInfo=None,
-    originPath=u'/Users/bodhi/Desktop/PhD/NY2013/rtfmri_ex/psyPy/MSIT/MSIT_ctrl_int.psyexp',
     savePickle=True, saveWideText=True,
     dataFileName=filename)
 
 # Setup the Window
-win = visual.Window(size=(1024, 768), fullscr=True, screen=0, allowGUI=False, allowStencil=False,
+win = visual.Window(size=(1024, 768), fullscr=FULL_SCREEN, screen=0, allowGUI=False, allowStencil=False,
     monitor='testMonitor', color=[0,0,0], colorSpace='rgb')
 # store frame rate of monitor if we can measure it successfully
 expInfo['frameRate']=win._getActualFrameRate()
@@ -128,53 +164,64 @@ if expInfo['frameRate']!=None:
 else:
     frameDur = 1.0/60.0 # couldn't get a reliable measure so guess
 
-    #text='Next you will see a set of three numbers (1, 2, 3 or 0).\n\nPlease identity the number that is different from the other two\nand press the correponding button:\n\n1 = index finger; 2 = middle finger; 3 = ring finger.\n\nYou have about 2 seconds for each,\nso try to be accurate rather than fast!\n\nFor example: \n\n(331) --> 1 is different --> press button with index finger\n\n(020) --> 2 is different --> press button with middle finger\n\n(232) --> 3 is differetn --> press button with ring finger\n\n',    font='Arial',
 # Initialize components for Routine "instruct"
 instructClock = core.Clock()
 instruct_text1 = visual.TextStim(win=win, ori=0, name='instruct_text1',
     text=task_instructions1,
     font='Arial',alignHoriz='center', alignVert='center',
-    pos=[0, 0.6], height=0.08, wrapWidth=1,
+    pos=[0, 0.5], height=0.08, wrapWidth=1.5,
     color='white', colorSpace='rgb', opacity=1,
     depth=0.0)
 
 instruct_text2 = visual.TextStim(win=win, ori=0, name='instruct_text2',
     text=task_instructions2,
     font='Arial',alignHoriz='center', alignVert='center',
-    pos=[0, 0.52], height=0.08, wrapWidth=1,
+    pos=[0, 0.42], height=0.08, wrapWidth=1.5,
     color='white', colorSpace='rgb', opacity=1,
     depth=0.0)
 
 instruct_text3 = visual.TextStim(win=win, ori=0, name='instruct_text3',
     text=task_instructions3,
     font='Arial',alignHoriz='center', alignVert='center',
-    pos=[0, 0.36], height=0.08, wrapWidth=1,
+    pos=[0, 0.26], height=0.08, wrapWidth=1.5,
     color='white', colorSpace='rgb', opacity=1,
     depth=0.0)
 
 instruct_text4 = visual.TextStim(win=win, ori=0, name='instruct_text4',
     text=task_instructions4,
     font='Arial',alignHoriz='center', alignVert='center',
-    pos=[0, 0.28], height=0.08, wrapWidth=1,
+    pos=[0, 0.08], height=0.08, wrapWidth=1.5,
     color='white', colorSpace='rgb', opacity=1,
     depth=0.0)
 
 instruct_text5 = visual.TextStim(win=win, ori=0, name='instruct_text5',
     text=task_instructions5,
     font='Arial',alignHoriz='center', alignVert='center',
-    pos=[0, 0.12], height=0.08, wrapWidth=1,
+    pos=[0, 0.0], height=0.08, wrapWidth=1.5,
     color='white', colorSpace='rgb', opacity=1,
     depth=0.0)
 
-instruct_text6 = visual.TextStim(win=win, ori=0, name='instruct_text5',
+instruct_text6 = visual.TextStim(win=win, ori=0, name='instruct_text6',
     text=task_instructions6,
     font='Arial',alignHoriz='center', alignVert='center',
-    pos=[0, 0.04], height=0.08, wrapWidth=1,
+    pos=[0, -0.16], height=0.08, wrapWidth=1.5,
     color='white', colorSpace='rgb', opacity=1,
     depth=0.0)
 
-# Initialize components for Routine "fixation"
-# Initialize components for Routine "fixation"
+instruct_text7 = visual.TextStim(win=win, ori=0, name='instruct_text7',
+    text=task_instructions7,
+    font='Arial',alignHoriz='center', alignVert='center',
+    pos=[0, -.24], height=0.08, wrapWidth=1.5,
+    color='white', colorSpace='rgb', opacity=1,
+    depth=0.0)
+
+instruct_text8 = visual.TextStim(win=win, ori=0, name='instruct_text8',
+    text=task_instructions8,
+    font='Arial',alignHoriz='center', alignVert='center',
+    pos=[0, -0.40], height=0.08, wrapWidth=1.5,
+    color='white', colorSpace='rgb', opacity=1,
+    depth=0.0)
+
 # Initialize components for Routine "fixation"
 fixationClock = core.Clock()
 fix_stim = visual.TextStim(win=win, ori=0, name='fix_stim',
@@ -190,6 +237,8 @@ control_stim = visual.TextStim(win=win, ori=0, name='control_stim',
     pos=[0, 0], height=0.3, wrapWidth=None,
     color='white', colorSpace='rgb', opacity=1,
     depth=0.0)
+
+
 # CC begin experiment
 all_ctrl_stim=['100','020','003']
 ctrl_stim=all_ctrl_stim[np.random.randint(len(all_ctrl_stim))]
@@ -253,7 +302,10 @@ instructComponents.append(instruct_text3)
 instructComponents.append(instruct_text4)
 instructComponents.append(instruct_text5)
 instructComponents.append(instruct_text6)
+instructComponents.append(instruct_text7)
+instructComponents.append(instruct_text8)
 instructComponents.append(ready)
+
 for thisComponent in instructComponents:
     if hasattr(thisComponent, 'status'):
         thisComponent.status = NOT_STARTED
