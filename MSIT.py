@@ -176,6 +176,10 @@ if expInfo['frameRate']!=None:
 else:
     frameDur = 1.0/60.0 # couldn't get a reliable measure so guess
 
+#########################################
+# Initialize various display components #
+#########################################
+
 # Initialize components for Routine "instruct"
 instructClock = core.Clock()
 instruct_text1 = visual.TextStim(win=win, ori=0, name='instruct_text1',
@@ -250,7 +254,8 @@ fix_stim = visual.Circle(win=win,
 
 # Initialize components for Routine "control"
 controlClock = core.Clock()
-control_stim = visual.TextStim(win=win, ori=0, name='control_stim',
+control_stim = visual.TextStim(win=win,
+    ori=0, name='control_stim',
     text='nonsense',    font='Arial',
     pos=[0, 0], height=0.3, wrapWidth=None,
     color='white', colorSpace='rgb', opacity=1,
