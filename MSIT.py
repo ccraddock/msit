@@ -12,11 +12,9 @@ Peirce, JW (2009) Generating stimuli for neuroscience using PsychoPy. Frontiers
 """
 
 from __future__ import division  # so that 1/3=0.333 instead of 1/3=0
-from psychopy import visual, core, data, event, logging, sound, gui
+from psychopy import visual, core, data, event, logging, gui
 from psychopy.constants import *  # things like STARTED, FINISHED
-import numpy as np  # whole numpy lib is available, prepend 'np.'
-from numpy import sin, cos, tan, log, log10, pi, average, sqrt, std, deg2rad, rad2deg, linspace, asarray
-from numpy.random import random, randint, normal, shuffle
+from numpy.random import randint, shuffle
 import os  # handy system and path functions
 import sys
 
@@ -146,10 +144,11 @@ else:
 ####################################
 
 # Setup files for saving
-if not os.path.isdir('data'):
-    os.makedirs('data')  # if this fails (e.g. permissions) we will get error
+if not os.path.isdir('../data'+ os.path.sep + '%s' %(expInfo['expName']) ):
+    # if this fails (e.g. permissions) we will get error
+    os.makedirs('../data'+ os.path.sep + '%s' %(expInfo['expName']) )
 
-filename = 'data' + os.path.sep + '%s' %(expInfo['expName']) \
+filename = '../data' + os.path.sep + '%s' %(expInfo['expName']) \
     + os.path.sep + '%s_%s_%s_%s' %(expInfo['Participant ID'],\
                                     expInfo['Session'],\
                                     expInfo['Starting Block'],\
@@ -482,7 +481,27 @@ if thisExp_loop != None:
     for paramName in thisExp_loop.keys():
         exec(paramName + '= thisExp_loop.' + paramName)
 
+# calculate performance statistics
+first_block_rt=0
+first_block_err=0
+first_block_nstim=0
+first_total_rt=0
+first_total_err=0
+first_total_nstim=0
+
+second_block_rt=0
+second_block_err=0
+second_block_nstim=0
+second_total_rt=0
+second_total_err=0
+second_total_nstim=0
+
+block_num = 0
 for thisExp_loop in exp_loop:
+
+    # counter keeps track of the current block number
+    block_num += 1
+
     currentLoop = exp_loop
     # abbreviate parameter names if possible (e.g. rgb = thisExp_loop.rgb)
     if thisExp_loop != None:
@@ -490,7 +509,7 @@ for thisExp_loop in exp_loop:
             exec(paramName + '= thisExp_loop.' + paramName)
 
     # set up handler to look after randomisation of conditions etc
-    first_loop = data.TrialHandler(nReps=NSTIM_BLOCK, method='random', 
+    first_loop = data.TrialHandler(nReps=NSTIM_BLOCK, method='random',
         extraInfo=expInfo, originPath=u'/Users/bodhi/Desktop/PhD/NY2013/rtfmri_ex/psyPy/MSIT/MSIT_ctrl_int.psyexp',
         trialList=[None],
         seed=None, name='first_loop')
@@ -501,17 +520,24 @@ for thisExp_loop in exp_loop:
         for paramName in thisFirst_loop.keys():
             exec(paramName + '= thisFirst_loop.' + paramName)
 
+
+    #reset the block statistics
+    first_block_rt=0
+    first_block_err=0
+    first_block_nstim=0
+
     prev_first_stim_str=None
+
     #---- first inner loop ----
     for thisFirst_loop in first_loop:
 
         # select the stimuli
-        if not prev_first_stim_str:
-            first_stim_str=all_first_stim[np.random.randint(len(all_first_stim))]
+        if prev_first_stim_str is None:
+            first_stim_str=all_first_stim[randint(len(all_first_stim))]
         else:
             # set next stimulus
-            set_diff=np.setdiff1d(all_first_stim,prev_first_stim_str)
-            np.random.shuffle(set_diff)
+            set_diff=[x for x in all_first_stim if x is not prev_first_stim_str]
+            shuffle(set_diff)
             first_stim_str=set_diff[0]
 
         # set the previous stimulus
@@ -530,7 +556,7 @@ for thisExp_loop in exp_loop:
             for paramName in thisFirst_loop.keys():
                 exec(paramName + '= thisFirst_loop.' + paramName)
 
-        #------Prepare to start Routine "control"-------
+        #------Prepare to start Routine "first inner loop"-------
         t = 0
         firstClock.reset()  # clock 
         frameN = -1
@@ -603,6 +629,7 @@ for thisExp_loop in exp_loop:
                 if len(theseKeys) > 0:  # at least one key was pressed
                     first_resp.keys = theseKeys[-1]  # just the last key pressed
                     first_resp.rt = first_resp.clock.getTime()
+                    first_block_rt += first_resp.rt
                     if first_resp.keys == 'left':
                         first_resp.keys = '1'
                     elif first_resp.keys == 'down':
@@ -615,6 +642,7 @@ for thisExp_loop in exp_loop:
                         first_resp.corr = 1
                     else:
                         first_resp.corr=0
+                        first_block_err += 1
 
             # check if all components have finished
             if not continueRoutine:  # a component has requested a forced-end of Routine
@@ -653,10 +681,20 @@ for thisExp_loop in exp_loop:
         thisExp.nextEntry()
 
     # completed NSTIM_BLOCK repeats of 'first_loop'
+    # update total statistics
+    first_total_rt+=first_block_rt
+    first_total_err+=first_block_err
+    first_total_nstim+=NSTIM_BLOCK
 
+    if expInfo['Starting Block'] is 'Interference':
+        print "Interference block #%d: errors %d, rt %3.2f sec"%(block_num,\
+            first_block_err, first_block_rt / float(NSTIM_BLOCK))
+    else:
+        print "Control block #%d: errors %d, rt %3.2f sec"%(block_num,\
+            first_block_err, first_block_rt / float(NSTIM_BLOCK))
 
     # set up handler to look after randomisation of conditions etc
-    second_loop = data.TrialHandler(nReps=NSTIM_BLOCK, method='random', 
+    second_loop = data.TrialHandler(nReps=NSTIM_BLOCK, method='random',
         extraInfo=expInfo, originPath=u'MSIT.psyexp',
         trialList=[None],
         seed=None, name='second_loop')
@@ -667,8 +705,14 @@ for thisExp_loop in exp_loop:
         for paramName in thisSecond_loop.keys():
             exec(paramName + '= thisSecond_loop.' + paramName)
 
-    prev_second_stim = None
-    #---- Inner control loop ----
+
+    #reset statistics
+    second_block_rt=0
+    second_block_err=0
+    second_block_nstim=0
+
+    prev_second_stim_str = None
+    #---- second inner loop ----
     for thisSecond_loop in second_loop:
         currentLoop = second_loop
         # abbreviate parameter names if possible (e.g. rgb = thisSecond_loop.rgb)
@@ -678,20 +722,20 @@ for thisExp_loop in exp_loop:
 
         #------Prepare to start Routine "trial"-------
         # set next stimulus
-        if not prev_second_stim:
-            second_stim_str=all_second_stim[np.random.randint(len(all_second_stim))]
+        if not prev_second_stim_str:
+            second_stim_str=all_second_stim[randint(len(all_second_stim))]
         else:
-            set_diff=np.setdiff1d(all_second_stim,prev_second_stim)
-            np.random.shuffle(set_diff)
+            set_diff=[x for x in all_second_stim if x is not prev_second_stim_str]
+            shuffle(set_diff)
             second_stim_str=set_diff[0]
 
         # keep track of the previous stim
-        prev_second_stim=second_stim_str
+        prev_second_stim_str=second_stim_str
 
         # determine the correct answer
         for i in second_stim_str:
            if second_stim_str.count(i) == 1:
-              target_correct=i
+              second_correct_str=i
               break
 
         t = 0
@@ -700,16 +744,16 @@ for thisExp_loop in exp_loop:
         routineTimer.add(STIM_ISI_SECONDS)
         # update component parameters for each repeat
         second_text.setColor('white', colorSpace='rgb')
-        stim_response = event.BuilderKeyResponse()  # create an object of type KeyResponse
-        stim_response.status = NOT_STARTED
+        second_response = event.BuilderKeyResponse()  # create an object of type KeyResponse
+        second_response.status = NOT_STARTED
 
         # logging
         second_loop.addData('second_stim_str',second_stim_str)
-        second_loop.addData('target_correct',target_correct)
+        second_loop.addData('second_correct_str',second_correct_str)
         # keep track of which components have finished
         trialComponents = []
         trialComponents.append(second_text)
-        trialComponents.append(stim_response)
+        trialComponents.append(second_response)
         for thisComponent in trialComponents:
             if hasattr(thisComponent, 'status'):
                 thisComponent.status = NOT_STARTED
@@ -733,29 +777,29 @@ for thisExp_loop in exp_loop:
             if second_text.status == STARTED:  # only update if being drawn
                 second_text.setText(second_stim_str, log=False)
 
-            # *stim_response* updates
-            if t >= 0 and stim_response.status == NOT_STARTED:
+            # *second_response* updates
+            if t >= 0 and second_response.status == NOT_STARTED:
                 # keep track of start time/frame for later
-                stim_response.tStart = t  # underestimates by a little under one frame
-                stim_response.frameNStart = frameN  # exact frame index
-                stim_response.status = STARTED
+                second_response.tStart = t  # underestimates by a little under one frame
+                second_response.frameNStart = frameN  # exact frame index
+                second_response.status = STARTED
                 # keyboard checking is just starting
-                stim_response.clock.reset()  # now t=0
+                second_response.clock.reset()  # now t=0
                 event.clearEvents()
                 # clear Lumina events
                 if LUMINA == 1:
                     lumina_dev.clear_response_queue()
-            elif stim_response.status == STARTED and t >= (0 + STIM_ISI_SECONDS):
-                stim_response.status = STOPPED
+            elif second_response.status == STARTED and t >= (0 + STIM_ISI_SECONDS):
+                second_response.status = STOPPED
 
-            if stim_response.status == STARTED:
+            if second_response.status == STARTED:
                 # check for a LUMINA_TRIGGER from the Lumina box
                 if LUMINA == 1:
                     theseKeys=[]
                     lumina_dev.poll_for_response()
                     while lumina_dev.response_queue_size() > 0:
-                        response = lumina_dev.get_next_response() 
-                        if response["pressed"]: 
+                        response = lumina_dev.get_next_response()
+                        if response["pressed"]:
                             print "Lumina received: %s, %d"%(response["key"],response["key"])
                             if response["key"] in [0,1,2]:
                                 print "matches"
@@ -765,19 +809,21 @@ for thisExp_loop in exp_loop:
                         'down','right'])
 
                 if len(theseKeys) > 0:  # at least one key was pressed
-                    stim_response.keys = theseKeys[-1]  # just the last key pressed
-                    stim_response.rt = stim_response.clock.getTime()
-                    if stim_response.keys == 'left':
-                        stim_response.keys = '1'
-                    elif stim_response.keys == 'down':
-                        stim_response.keys = '2'
-                    elif stim_response.keys == 'right':
-                        stim_response.keys = '3'
+                    second_response.keys = theseKeys[-1]  # just the last key pressed
+                    second_response.rt = second_response.clock.getTime()
+                    second_block_rt+=second_response.rt
+                    if second_response.keys == 'left':
+                        second_response.keys = '1'
+                    elif second_response.keys == 'down':
+                        second_response.keys = '2'
+                    elif second_response.keys == 'right':
+                        second_response.keys = '3'
                     # was this 'correct'?
-                    if (stim_response.keys == str(target_correct)):
-                        stim_response.corr = 1
+                    if (second_response.keys == str(second_correct_str)):
+                        second_response.corr = 1
                     else:
-                        stim_response.corr=0
+                        second_response.corr=0
+                        second_block_err+=1
 
 
             # check if all components have finished
@@ -803,24 +849,45 @@ for thisExp_loop in exp_loop:
             if hasattr(thisComponent, "setAutoDraw"):
                 thisComponent.setAutoDraw(False)
         # check responses
-        if len(stim_response.keys) == 0:  # No response was made
-           stim_response.keys=None
+        if len(second_response.keys) == 0:  # No response was made
+           second_response.keys=None
            # was no response the correct answer?!
-           if str(target_correct).lower() == 'none': stim_response.corr = 1  # correct non-response
-           else: stim_response.corr = 0  # failed to respond (incorrectly)
+           if str(second_correct_str).lower() == 'none': second_response.corr = 1  # correct non-response
+           else: second_response.corr = 0  # failed to respond (incorrectly)
         # store data for second_loop (TrialHandler)
-        second_loop.addData('stim_response.keys',stim_response.keys)
-        second_loop.addData('stim_response.corr', stim_response.corr)
-        if stim_response.keys != None:  # we had a response
-            second_loop.addData('stim_response.rt', stim_response.rt)
+        second_loop.addData('second_response.keys',second_response.keys)
+        second_loop.addData('second_response.corr', second_response.corr)
+        if second_response.keys != None:  # we had a response
+            second_loop.addData('second_response.rt', second_response.rt)
 
         thisExp.nextEntry()
 
     # completed NSTIM_BLOCK repeats of 'second_loop'
+    # update total statistics
+    second_total_rt+=second_block_rt
+    second_total_err+=second_block_err
+    second_total_nstim+=NSTIM_BLOCK
+
+    if expInfo['Starting Block'] is 'Interference':
+        print "Control block #%d: errors %d, rt %3.2f sec"%(block_num,\
+            second_block_err, second_block_rt / float(NSTIM_BLOCK))
+    else:
+        print "Interference block #%d: errors %d, rt %3.2f sec"%(block_num,\
+            second_block_err, second_block_rt / float(NSTIM_BLOCK))
 
     thisExp.nextEntry()
 
 # completed NBLOCK_ITER repeats of 'exp_loop'
+if expInfo['Starting Block'] is 'Interference':
+    print "Control total: errors %d, rt %3.2f sec"%( \
+        second_total_err, second_total_rt / float(second_total_nstim))
+    print "Interference total: errors %d, rt %3.2f sec"%( \
+        first_total_err, first_total_rt / float(first_total_nstim))
+else:
+    print "Control total: errors %d, rt %3.2f sec"%( \
+        first_total_err, first_total_rt / float(first_total_nstim))
+    print "Interference total: errors %d, rt %3.2f sec"%( \
+        second_total_err, second_total_rt / float(second_total_nstim))
 
 
 #------Prepare to start Routine "fixation"-------
