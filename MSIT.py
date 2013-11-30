@@ -102,11 +102,10 @@ if dlg.OK == False:
 expInfo['date'] = data.getDateStr()  # add a simple timestamp
 expInfo['expName'] = expName
 
-print expInfo['Configuration']
 if expInfo['Configuration'] == 'Practice':
-    print "Configuration Practice"
+    print "Configuration: Practice"
 elif expInfo['Configuration'] == 'Task':
-    print "Configuration Task"
+    print "Configuration: Task"
 
 
 # if practice, reconfigure some aspects
