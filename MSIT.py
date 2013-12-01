@@ -103,8 +103,10 @@ expInfo['date'] = data.getDateStr()  # add a simple timestamp
 expInfo['expName'] = expName
 
 if expInfo['Configuration'] == 'Practice':
+    logging.log(level=logging.EXP, msg="Configuration: Practice")
     print "Configuration: Practice"
 elif expInfo['Configuration'] == 'Task':
+    logging.log(level=logging.EXP, msg="Configuration: Task")
     print "Configuration: Task"
 
 
@@ -137,9 +139,11 @@ if LUMINA == 1:
     if devices:
         lumina_dev=devices[0]
     else:
+        logging.log(level=logging.WARN, msg="LUMINA: Could not find device")
         print "Could not find Lumina device"
         sys.exit(1)
 
+    logging.log(level=logging.EXP, msg="LUMINA: Found response box")
     print "Found response box:", lumina_dev
 
     # restart timers associated with Lumina box
@@ -147,6 +151,7 @@ if LUMINA == 1:
         lumina_dev.reset_base_timer()
         lumina_dev.reset_rt_timer()
     else:
+        logging.log(level=logging.WARN, msg="LUMINA: Device not a response box?")
         print "Error: Lumina device == not a response device??"
         sys.exit(1)
 
@@ -161,9 +166,10 @@ if not os.path.isdir('../data'+ os.path.sep + '%s' %(expInfo['expName']) ):
     os.makedirs('../data'+ os.path.sep + '%s' %(expInfo['expName']) )
 
 filename = '../data' + os.path.sep + '%s' %(expInfo['expName']) \
-    + os.path.sep + '%s_%s_%s_%s' %(expInfo['Participant ID'],\
+    + os.path.sep + '%s_%s_%s_%s_%s' %(expInfo['Participant ID'],\
                                     expInfo['Session'],\
                                     expInfo['Starting Block'],\
+                                    expInfo['Configuration'],\
                                     expInfo['date'])
 
 logFile = logging.LogFile(filename+'.log', level=logging.EXP)
@@ -186,7 +192,7 @@ win = visual.Window(size=(1024, 768),
                     allowGUI=False,
                     allowStencil=False,
                     monitor='testMonitor',
-                    color=[0,0,0],
+                    color='black',
                     colorSpace='rgb')
 
 # store frame rate of monitor if we can measure it successfully
@@ -394,6 +400,9 @@ while continueRoutine:
                 response = lumina_dev.get_next_response()
                 if response["pressed"]:
                     # LUMINA debug statement
+                    logging.log(level=logging.EXP,\
+                        msg="Lumina received: %s, %d"%(response["key"],\
+                        response["key"]))
                     print "Lumina received: %s, %d"%(response["key"],\
                         response["key"])
                     # if we receive a TRIGGER enable the task
@@ -645,7 +654,11 @@ for thisExp_loop in exp_loop:
                     while lumina_dev.response_queue_size() > 0:
                         response = lumina_dev.get_next_response()
                         if response["pressed"]:
-                            print "Lumina received: %s, %d"%(response["key"],response["key"])
+                            logging.log(level=logging.EXP,\
+                                msg="Lumina received: %s, %d"%(response["key"],\
+                                response["key"]))
+                            print "Lumina received: %s, %d"%(response["key"],\
+                                response["key"])
                             if response["key"] in [0,1,2]:
                                 theseKeys.append(str(response["key"]+1))
                 else:
@@ -725,11 +738,20 @@ for thisExp_loop in exp_loop:
     first_total_nstim+=NSTIM_BLOCK
 
     if NSTIM_BLOCK > first_block_err:
+        logging.log(level=logging.EXP,\
+            msg="%s block #%d: errors %d, rt %3.2f sec"%(\
+            expInfo['Starting Block'],block_num,\
+            first_block_err,\
+            first_block_rt / float(NSTIM_BLOCK - first_block_err)))
         print "%s block #%d: errors %d, rt %3.2f sec"%(\
             expInfo['Starting Block'],block_num,\
             first_block_err,\
             first_block_rt / float(NSTIM_BLOCK - first_block_err))
     else:
+        logging.log(level=logging.EXP,\
+            msg="%s block #%d: errors %d, rt nan"%(\
+            expInfo['Starting Block'],block_num,\
+            first_block_err))
         print "%s block #%d: errors %d, rt nan"%(\
             expInfo['Starting Block'],block_num,\
             first_block_err)
@@ -849,9 +871,11 @@ for thisExp_loop in exp_loop:
                     while lumina_dev.response_queue_size() > 0:
                         response = lumina_dev.get_next_response()
                         if response["pressed"]:
+                            logging.log(level=logging.DATA,\
+                                msg="Lumina received: %s, %d"%(response["key"],\
+                                response["key"]))
                             print "Lumina received: %s, %d"%(response["key"],response["key"])
                             if response["key"] in [0,1,2]:
-                                print "matches"
                                 theseKeys.append(str(response["key"]+1))
                 else:
                     theseKeys = event.getKeys(keyList=['1', '2', '3','left',\
@@ -932,9 +956,15 @@ for thisExp_loop in exp_loop:
         t_str = "Interference"
 
     if NSTIM_BLOCK > second_block_err:
+        logging.log(level=logging.EXP,\
+            msg="%s block #%d: errors %d, rt %3.2f sec"%(t_str,block_num,\
+            second_block_err, second_block_rt / float(NSTIM_BLOCK-second_block_err)))
         print "%s block #%d: errors %d, rt %3.2f sec"%(t_str,block_num,\
             second_block_err, second_block_rt / float(NSTIM_BLOCK-second_block_err))
     else:
+        logging.log(level=logging.EXP,\
+            msg="%s block #%d: errors %d, rt nan"%(t_str,block_num,\
+            second_block_err ))
         print "%s block #%d: errors %d, rt nan"%(t_str,block_num,\
             second_block_err )
 
@@ -942,13 +972,25 @@ for thisExp_loop in exp_loop:
 
 # completed NBLOCK_ITER repeats of 'exp_loop'
 if expInfo['Starting Block'] == 'Interference':
+    logging.log(level=logging.EXP,\
+        msg="Control total: errors %d, rt %3.2f sec"%( \
+        second_total_err, second_total_rt / float(second_total_nstim)))
     print "Control total: errors %d, rt %3.2f sec"%( \
         second_total_err, second_total_rt / float(second_total_nstim))
+    logging.log(level=logging.EXP,\
+        msg="Interference total: errors %d, rt %3.2f sec"%( \
+        first_total_err, first_total_rt / float(first_total_nstim)))
     print "Interference total: errors %d, rt %3.2f sec"%( \
         first_total_err, first_total_rt / float(first_total_nstim))
 else:
+    logging.log(level=logging.EXP,\
+        msg="Control total: errors %d, rt %3.2f sec"%( \
+        first_total_err, first_total_rt / float(first_total_nstim)))
     print "Control total: errors %d, rt %3.2f sec"%( \
         first_total_err, first_total_rt / float(first_total_nstim))
+    logging.log(level=logging.EXP,\
+        msg="Interference total: errors %d, rt %3.2f sec"%( \
+        second_total_err, second_total_rt / float(second_total_nstim)))
     print "Interference total: errors %d, rt %3.2f sec"%( \
         second_total_err, second_total_rt / float(second_total_nstim))
 
