@@ -12,7 +12,8 @@ Peirce, JW (2009) Generating stimuli for neuroscience using PsychoPy. Frontiers
 """
 
 from __future__ import division  # so that 1/3=0.333 instead of 1/3=0
-from psychopy import visual, core, data, event, logging, gui
+#from psychopy import visual, core, data, event, logging, gui
+from psychopy import core, data, event, logging, gui
 from psychopy.constants import *  # things like STARTED, FINISHED
 from numpy.random import randint, shuffle
 import os  # handy system and path functions
@@ -24,7 +25,7 @@ import sys
 ############################
 
 # Turn fullscreen off for testing on monitor that == not 1024x768
-FULL_SCREEN=False
+FULL_SCREEN=True
 
 # CC here are some parameters that determine the behavior of the task
 STIM_ISI_SECONDS = 1.75
@@ -92,7 +93,7 @@ expInfo = {'Participant ID':'',\
            'Configuration': ['Task', 'Practice'], \
            'Starting Block': ['Control', 'Interference']}
 
-dlg = gui.DlgFromDict(dictionary=expInfo, title=expName)
+dlg = gui.DlgFromDict(dictionary=expInfo, title=expName, fixed=[])
 
 # if user pressed cancel, quit
 if dlg.OK == False:
@@ -185,6 +186,9 @@ thisExp = data.ExperimentHandler(name=expName, version='',
 # Setup the Window. #
 #####################
 
+#moved this here because it renders the dialog useless
+from psychopy import visual
+
 # Setup the Window
 win = visual.Window(size=(1024, 768),
                     fullscr=FULL_SCREEN,
@@ -196,7 +200,7 @@ win = visual.Window(size=(1024, 768),
                     colorSpace='rgb')
 
 # store frame rate of monitor if we can measure it successfully
-expInfo['frameRate']=win._getActualFrameRate()
+expInfo['frameRate']=win.getActualFrameRate()
 if expInfo['frameRate']!=None:
     frameDur = 1.0/round(expInfo['frameRate'])
 else:
@@ -662,17 +666,17 @@ for thisExp_loop in exp_loop:
                             if response["key"] in [0,1,2]:
                                 theseKeys.append(str(response["key"]+1))
                 else:
-                    theseKeys = event.getKeys(keyList=['1', '2', '3', 'left',\
+                    theseKeys = event.getKeys(keyList=['h', 'j', 'k', 'left',\
                         'down','right'])
 
                 if len(theseKeys) > 0:  # at least one key was pressed
                     first_resp.keys = theseKeys[-1]  # just the last key pressed
                     first_resp.rt = first_resp.clock.getTime()
-                    if first_resp.keys == 'left':
+                    if first_resp.keys == 'left' or first_resp.keys == 'h':
                         first_resp.keys = '1'
-                    elif first_resp.keys == 'down':
+                    elif first_resp.keys == 'down' or first_resp.keys == 'j':
                         first_resp.keys = '2'
-                    elif first_resp.keys == 'right':
+                    elif first_resp.keys == 'right' or first_resp.keys == 'k':
                         first_resp.keys = '3'
 
                     # was this 'correct'?
@@ -878,17 +882,17 @@ for thisExp_loop in exp_loop:
                             if response["key"] in [0,1,2]:
                                 theseKeys.append(str(response["key"]+1))
                 else:
-                    theseKeys = event.getKeys(keyList=['1', '2', '3','left',\
+                    theseKeys = event.getKeys(keyList=['h', 'j', 'k','left',\
                         'down','right'])
 
                 if len(theseKeys) > 0:  # at least one key was pressed
                     second_response.keys = theseKeys[-1]  # just the last key pressed
                     second_response.rt = second_response.clock.getTime()
-                    if second_response.keys == 'left':
+                    if second_response.keys == 'left' or second_response.keys == 'h':
                         second_response.keys = '1'
-                    elif second_response.keys == 'down':
+                    elif second_response.keys == 'down' or second_response.keys == 'j':
                         second_response.keys = '2'
-                    elif second_response.keys == 'right':
+                    elif second_response.keys == 'right' or second_response.keys == 'k':
                         second_response.keys = '3'
                     # was this 'correct'?
                     if (second_response.keys == str(second_correct_str)):
