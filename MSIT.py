@@ -115,7 +115,6 @@ elif expInfo['Configuration'] == 'Task':
 if expInfo['Configuration'] == 'Practice':
     FIXATION_BUFFER_SECONDS = 3.0
 
-
 # if interference first, swap stim
 if expInfo['Starting Block'] == 'Interference':
     all_first_text=all_int_stim
@@ -162,16 +161,16 @@ if LUMINA == 1:
 ####################################
 
 # Setup files for saving
-if not os.path.isdir('../data'+ os.path.sep + '%s' %(expInfo['expName']) ):
+if not os.path.isdir('data'):
     # if this fails (e.g. permissions) we will get error
-    os.makedirs('../data'+ os.path.sep + '%s' %(expInfo['expName']) )
+    os.makedirs('data')
 
-filename = '../data' + os.path.sep + '%s' %(expInfo['expName']) \
-    + os.path.sep + '%s_%s_%s_%s_%s' %(expInfo['Participant ID'],\
-                                    expInfo['Session'],\
-                                    expInfo['Starting Block'],\
-                                    expInfo['Configuration'],\
-                                    expInfo['date'])
+filename = 'data' + os.path.sep + \
+    '%s_%s_%s_%s_%s' %(expInfo['Participant ID'],\
+                                            expInfo['Session'],\
+                                            expInfo['Starting Block'],\
+                                            expInfo['Configuration'],\
+                                            expInfo['date'])
 
 logFile = logging.LogFile(filename+'.log', level=logging.EXP)
 logging.console.setLevel(logging.WARNING)  # this outputs to the screen, not a file
