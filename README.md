@@ -1,3 +1,5 @@
+[![DOI](https://zenodo.org/badge/9342/ccraddock/msit.svg)](https://zenodo.org/badge/latestdoi/9342/ccraddock/msit)
+
 # Multi-Source Interference Task
 
 R. Cameron Craddock<sup>1,2,†</sup>
