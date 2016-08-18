@@ -1,4 +1,4 @@
-# Moral Dilemma Task
+# Multi-Source Interference Task
 
 R. Cameron Craddock<sup>1,2,†</sup>
 
